@@ -8,22 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		245447131F3B96AF00ABBD8C /* openframe.h in Headers */ = {isa = PBXBuildFile; fileRef = 245447111F3B96AF00ABBD8C /* openframe.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2454471D1F3B96E900ABBD8C /* CLBWidgets.swift in Headers */ = {isa = PBXBuildFile; fileRef = 2454471A1F3B96E900ABBD8C /* CLBWidgets.swift */; };
-		2454471E1F3B96E900ABBD8C /* CLBIResource.swift in Headers */ = {isa = PBXBuildFile; fileRef = 245447191F3B96E900ABBD8C /* CLBIResource.swift */; };
-		2454471F1F3B96E900ABBD8C /* CLBBridge.swift in Headers */ = {isa = PBXBuildFile; fileRef = 2454471C1F3B96E900ABBD8C /* CLBBridge.swift */; };
-		245447201F3B96E900ABBD8C /* CLBLayoutEngine.swift in Headers */ = {isa = PBXBuildFile; fileRef = 2454471B1F3B96E900ABBD8C /* CLBLayoutEngine.swift */; };
-		245447401F3B9B1600ABBD8C /* CLBIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2454473F1F3B9B1600ABBD8C /* CLBIViewController.swift */; };
+		24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
+		24CDFBD01F3B9D7000ABBD8C /* CLBWidgets.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */; };
+		24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
+		24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; };
+		24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2454470E1F3B96AF00ABBD8C /* openframe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = openframe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		245447111F3B96AF00ABBD8C /* openframe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = openframe.h; sourceTree = "<group>"; };
 		245447121F3B96AF00ABBD8C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		245447191F3B96E900ABBD8C /* CLBIResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIResource.swift; sourceTree = SOURCE_ROOT; };
-		2454471A1F3B96E900ABBD8C /* CLBWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBWidgets.swift; sourceTree = SOURCE_ROOT; };
-		2454471B1F3B96E900ABBD8C /* CLBLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBLayoutEngine.swift; sourceTree = SOURCE_ROOT; };
-		2454471C1F3B96E900ABBD8C /* CLBBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBBridge.swift; sourceTree = SOURCE_ROOT; };
-		2454473F1F3B9B1600ABBD8C /* CLBIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIViewController.swift; sourceTree = SOURCE_ROOT; };
+		24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIResource.swift; sourceTree = "<group>"; };
+		24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBWidgets.swift; sourceTree = "<group>"; };
+		24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIViewController.swift; sourceTree = "<group>"; };
+		24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBLayoutEngine.swift; sourceTree = "<group>"; };
+		24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBBridge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,11 +56,11 @@
 		245447101F3B96AF00ABBD8C /* openframe */ = {
 			isa = PBXGroup;
 			children = (
-				2454471C1F3B96E900ABBD8C /* CLBBridge.swift */,
-				245447191F3B96E900ABBD8C /* CLBIResource.swift */,
-				2454471B1F3B96E900ABBD8C /* CLBLayoutEngine.swift */,
-				2454471A1F3B96E900ABBD8C /* CLBWidgets.swift */,
-				2454473F1F3B9B1600ABBD8C /* CLBIViewController.swift */,
+				24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */,
+				24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */,
+				24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */,
+				24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */,
+				24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */,
 				245447111F3B96AF00ABBD8C /* openframe.h */,
 				245447121F3B96AF00ABBD8C /* Info.plist */,
 			);
@@ -74,11 +74,12 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2454471F1F3B96E900ABBD8C /* CLBBridge.swift in Headers */,
-				245447201F3B96E900ABBD8C /* CLBLayoutEngine.swift in Headers */,
-				2454471E1F3B96E900ABBD8C /* CLBIResource.swift in Headers */,
+				24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */,
+				24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */,
+				24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */,
+				24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */,
 				245447131F3B96AF00ABBD8C /* openframe.h in Headers */,
-				2454471D1F3B96E900ABBD8C /* CLBWidgets.swift in Headers */,
+				24CDFBD01F3B9D7000ABBD8C /* CLBWidgets.swift in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,7 +151,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				245447401F3B9B1600ABBD8C /* CLBIViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
