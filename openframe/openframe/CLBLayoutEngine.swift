@@ -34,6 +34,8 @@ struct ShadowView : Codable {
     var type:String
     var children:Array<ShadowView>
     var blur:Bool
+    var datasource:String?
+    var selector:String?
 }
 
 struct LayoutInfoSimpleResult : Codable {
@@ -52,62 +54,6 @@ class UIViewControllerExtra {
 }
 
 
-class ImageCache {
-    static var _shared:ImageCache!;
-    static var shared:ImageCache {
-        get {
-            if _shared == nil {
-                _shared = ImageCache()
-            }
-            return _shared
-        }
-    }
-    //    let default_image = UIImage(named: "human")!
-    var cache = Dictionary<String, UIImage>()
-    subscript(index:String, completion: @escaping (UIImage) -> Void ) -> Bool {
-        if cache[index] != nil {
-            DispatchQueue.main.async {
-                completion(self.cache[index]!)
-            }
-        } else {
-            //            DispatchQueue.main.async {
-            //                completion(self.default_image)
-            //            }
-            if index.contains("https://") {
-                let data = try? Data(contentsOf: URL(string: index)!)
-                guard let d = data else {
-                    //                    DispatchQueue.main.async {
-                    //                        completion(self.default_image)
-                    //                    }
-                    return false
-                }
-                let image = UIImage(data: d)
-                cache[index] = image
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    completion(image!)
-                }
-            } else if index.contains("local://") {
-                var photoid = index.replacingOccurrences(of: "local://", with: "")
-                var photos = PHAsset.fetchAssets(withLocalIdentifiers: [photoid], options: nil)
-                let options = PHImageRequestOptions()
-                options.resizeMode = .none
-                PHImageManager.default().requestImage(for: photos[0], targetSize: CGSize(width: 512,height: 512), contentMode: .aspectFill, options: options, resultHandler: { (image, data) in
-                    if Double((image?.size.width)!) > 512.0  {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: {
-                            self.cache[index] = image
-                            completion(image!)
-                        })
-                    }
-                })
-                
-            }
-            
-        }
-        
-        return true
-    }
-    
-}
 
 class CLBWebViewEngine {
     var wv:UIWebView!
@@ -142,10 +88,10 @@ class CLBWebViewEngine {
 }
 
 
-@objc class CLBLayoutEngine : NSObject, LayoutEngineExports, UIWebViewDelegate {
+@objc public class CLBLayoutEngine : NSObject, LayoutEngineExports, UIWebViewDelegate {
     dynamic var firstName: String = "test"
     
-    static var refreshTimeout = 2000
+    public static var refreshTimeout = 2000
     private static var _instance:CLBLayoutEngine!
     public static var shared:CLBLayoutEngine {
         if _instance == nil {
@@ -183,12 +129,18 @@ class CLBWebViewEngine {
         self.options = options
         loadCB = completion
 
-        var doCacheLoad = false
+        var doCacheLoad = true
         if doCacheLoad == true {
-            var json = UserDefaults.standard.object(forKey: "data") as! String
-            update(json: json)
+//            var json = UserDefaults.standard.object(forKey: "data") as! String
+//            print(json)
+            if let filepath = Bundle.main.path(forResource: "wib_browser", ofType: "json") {
+                var json = try? String(contentsOfFile: filepath)
+                update(json: json!)
+            }
+            
+            
         } else {
-            let path = Bundle.main.path(forResource: "layout2", ofType: "html")
+            let path = Bundle.main.path(forResource: "wbprocessor", ofType: "html")
             let data = NSData.init(contentsOfFile: path!)
             let base = URL(string: "http://myxed.com")
             engine.wv.load(data as! Data, mimeType: "text/html", textEncodingName: "utf-8", baseURL: base! )
@@ -197,7 +149,7 @@ class CLBWebViewEngine {
 
     }
     
-    func webViewDidFinishLoad(_ webView: UIWebView) {
+    public func webViewDidFinishLoad(_ webView: UIWebView) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.doLoadVC(options: self.options!)
         }
@@ -238,7 +190,7 @@ class CLBWebViewEngine {
     }
     
     func hierV(node:ShadowView, extra: inout UIViewControllerExtra, parent:UIView? = nil)  -> UIView {
-        let module = Bundle.main.infoDictionary!["CFBundleExecutable"] as! String
+        let module = "openframe"//Bundle.main.infoDictionary!["CFBundleExecutable"] as! String
         let vname = node.type
         let path = node.id
         print("path: \(path), blur: \(node.blur)")
@@ -249,6 +201,9 @@ class CLBWebViewEngine {
             createEffectsView(parent!, mainview)
         }
         extra.views[path] = mainview
+        if node.datasource != nil {
+            
+        }
         for child in node.children {
             let cview = hierV(node: child, extra: &extra, parent: mainview)
             mainview.addSubview(cview)
@@ -299,16 +254,6 @@ class CLBWebViewEngine {
 
 }
 
-extension UIStoryboard {
-    class func instantiateWIBViewController(withURL: String, options: [String: Any], completion: @escaping (UIViewController) -> Void) {
-        CLBLayoutEngine.shared.loadVC(withURL, options: options, completion: {
-            vc in
-            var mwv = MyxedWebView(appname: "testapp")
-            vc.view.insertSubview(mwv, at: 0)
-            completion(vc)
-        })
-    }
-}
 
 extension UIView {
 
@@ -340,7 +285,7 @@ extension UIView {
     
     public var data:Any {
         set {
-            setData(data: data)
+//            setData(data: data)
         }
         get {
             return ""
@@ -355,8 +300,20 @@ extension UIViewController {
 //        CLBLayoutEngine.shared.
         
     }
-    func animateSubviews(_ label:String, duration:Double) {
+    public func animateSubviews(_ label:String, duration:Double) {
         var ex = CLBLayoutEngine.shared.vcs[self]
         CLBLayoutEngine.shared.animate(ex!, label: "second", mode: nil, duration: duration)
     }
+}
+
+extension UIStoryboard {
+    public class func instantiateWIBViewController(withURL: String, options: [String: Any], completion: @escaping (UIViewController) -> Void) {
+        CLBLayoutEngine.shared.loadVC(withURL, options: options, completion: {
+            vc in
+            var mwv = MyxedWebView(appname: "WeightList")
+            vc.view.insertSubview(mwv, at: 0)
+            completion(vc)
+        })
+    }
+    
 }

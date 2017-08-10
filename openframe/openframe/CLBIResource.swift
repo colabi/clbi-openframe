@@ -7,6 +7,70 @@
 //
 
 import UIKit
+import Photos
+
+
+class ImageCache {
+    static var _shared:ImageCache!;
+    static var shared:ImageCache {
+        get {
+            if _shared == nil {
+                _shared = ImageCache()
+            }
+            return _shared
+        }
+    }
+    //    let default_image = UIImage(named: "human")!
+    var cache = Dictionary<String, UIImage>()
+    subscript(index:String, completion: @escaping (UIImage) -> Void ) -> Bool {
+        if cache[index] != nil {
+            DispatchQueue.main.async {
+                completion(self.cache[index]!)
+            }
+        } else {
+            //            DispatchQueue.main.async {
+            //                completion(self.default_image)
+            //            }
+            if index.contains("https://") {
+                let data = try? Data(contentsOf: URL(string: index)!)
+                guard let d = data else {
+                    //                    DispatchQueue.main.async {
+                    //                        completion(self.default_image)
+                    //                    }
+                    return false
+                }
+                let image = UIImage(data: d)
+                cache[index] = image
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    completion(image!)
+                }
+            } else if index.contains("local://") {
+                var photoid = index.replacingOccurrences(of: "local://", with: "")
+                var photos = PHAsset.fetchAssets(withLocalIdentifiers: [photoid], options: nil)
+                let options = PHImageRequestOptions()
+                options.resizeMode = .none
+                PHImageManager.default().requestImage(for: photos[0], targetSize: CGSize(width: 512,height: 512), contentMode: .aspectFill, options: options, resultHandler: { (image, data) in
+                    if Double((image?.size.width)!) > 512.0  {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: {
+                            self.cache[index] = image
+                            completion(image!)
+                        })
+                    }
+                })
+                
+            }
+            
+        }
+        
+        return true
+    }
+    
+}
+
+typealias ListenerCB = (AnyObject) -> Void
+typealias ResourceDictionary =  [String:ResourceItem]
+typealias ResourceDictionaryCB = (ResourceDictionary) -> Void
+
 
 
 struct CLBStreamOption {
@@ -15,14 +79,104 @@ struct CLBStreamOption {
     var preloadResources:Bool
 }
 
-struct PostSummaryInfo {
+public struct PostSummaryInfo {
     
 }
 
-typealias ListenerCB = (Any) -> Void
 
-protocol ListenerDelegate {
-    
+
+public struct Post  {
+    var key:String
+    var ts:Int?
+    var summary:PostSummaryInfo?
+    var resources:ResourceDictionary?
+}
+
+//STREAM MANAGER DEALS WITH STREAMS OF WELL DESCRIBED POSTS
+class StreamManager : NSObject {
+    static var _shared:StreamManager!;
+    static var shared:StreamManager {
+        get {
+            if _shared == nil {
+                _shared = StreamManager()
+            }
+            return _shared
+        }
+    }
+    var listeners:[String:Array<ListenerCB>]!
+    var id = 0
+    override init() {
+        super.init()
+        listeners = [String:Array<ListenerCB>]()
+    }
+    subscript(index:String, completion: @escaping ([AnyObject]) -> Void ) -> Int {
+        var nid = id
+        CLBIBridge.shared.setupListener(name:index, mode:"list") {
+            data in
+            //convert data to [Post]
+            var posts = data as! [AnyObject]
+            completion(posts)
+        }
+        return id
+    }
+    //POSSIBLY SUBSCRIPT SHOULD ACCESS WHAT'SIN CACHE
+
+}
+
+//SPECIFIC TO OBJECT STATE
+public class ObjectState : NSObject {
+    static var _shared:ObjectState!;
+    static var shared:ObjectState {
+        get {
+            if _shared == nil {
+                _shared = ObjectState()
+            }
+            return _shared
+        }
+    }
+    var id = 0
+    var last_state:[String:AnyObject]
+    var listeners:[String:Array<(AnyObject) -> Void>]
+    override init() {
+        last_state = [String:AnyObject]()
+        listeners = [String:Array<(AnyObject) -> Void>]()
+        super.init()
+    }
+    func subscribe(_ index:String, _ field:String, completion: @escaping (AnyObject) -> Void ) -> Int {
+        var nid = id
+        id += 1
+
+        if listeners[field] == nil {
+            listeners[field] = Array<(AnyObject) -> Void>()
+            CLBIBridge.shared.setupListener(name: "\(index)", mode: "object") {
+                state in
+                var dict = state as! [String:AnyObject]
+                self.handleUpdates(dict: dict)
+            }
+        }
+        listeners[field]?.append(completion)
+        return id
+    }
+    func handleUpdates(dict:[String:AnyObject]) {
+//        print(dict)
+        for (key, value) in dict {
+            var lv:AnyObject? = last_state[key]
+            if lv == nil  {
+                last_state[key] = value
+                execListeners(path: key, value: value)
+            }
+        }
+    }
+    func execListeners(path:String, value: AnyObject) {
+        var fns = listeners[path]
+        if fns == nil {
+            return
+        }
+        for l in fns! {
+            l(value)
+        }
+    }
+
 }
 
 
@@ -30,7 +184,9 @@ class ResourceTracker {
     var type:Int = 0;
 }
 
+
 struct ResourceItem : Hashable, Equatable {
+
     var path:String;
     var state:Int = 0;
     var data:Data?;
@@ -44,11 +200,20 @@ struct ResourceItem : Hashable, Equatable {
     }
 }
 
-class ResourceManager {
+class ResourceManager : NSObject {
+    static var _shared:ResourceManager!;
+    static var shared:ResourceManager {
+        get {
+            if _shared == nil {
+                _shared = ResourceManager()
+            }
+            return _shared
+        }
+    }
     var resources = [String:ResourceItem]();
     var wait_queue = [ResourceItem:[(ResourceItem) -> Void]]()
-    init() {
-        
+    override init() {
+        super.init()
     }
     
     func retrieve_resource(path:String, type:String, completion: @escaping (Data) -> Void) {
@@ -103,42 +268,32 @@ class ResourceManager {
             
         }
         g.notify(queue: DispatchQueue.global(qos: .background)) {
-            completion()
+            //            completion()
         }
+    }
+    
+    subscript(post:Post, completion: @escaping (Post) -> Void) -> Int {
+        DispatchQueue.main.async {
+            completion(post)
+        }
+        return 0
     }
 }
 
+extension UIViewController {
+    func connectToDataSources(options:[String:CLBStreamOption]) {
+        for (path,v) in options {
+            //            CLBIBridge.shared.streams["path"] {
+            //                obj in
+            //                print(obj) //delivery summary
+            //                self.updateViewHierarchy(path: path, object: obj)
+            //            }
+        }
 
-class StreamManager : NSObject {
-    static var _shared:StreamManager!;
-    static var shared:StreamManager {
-        get {
-            if _shared == nil {
-                _shared = StreamManager()
-            }
-            return _shared
-        }
     }
-    var listeners:[String:Array<ListenerCB>]!
-    var id = 0
-    override init() {
-        super.init()
-        listeners = [String:Array<ListenerCB>]()
+    
+    func updateViewHierarchy(path:String, object:Any) {
+        
     }
-    subscript(index:String, completion: @escaping ListenerCB ) -> Int {
-        var nid = id
-        if listeners[index] == nil {
-            listeners[index] = [ListenerCB]()
-            CLBIBridge.shared.setupListener(name:index)
-        }
-        listeners[index]?.append(completion)
-        return id
-    }
-    func execListeners(path:String, objects:Any) {
-        var ll = listeners[path]
-        for l in ll! {
-            l(objects)
-        }
-    }
-
 }
+
