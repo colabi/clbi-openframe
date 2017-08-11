@@ -164,15 +164,16 @@ class CLBWebViewEngine {
     }
     
     func animate(_ extra:UIViewControllerExtra, label:String, mode:String?, duration:Double) {
+        print("ANIMATING VIEW HIERARCHY")
         var mode = extra.info.modes[label]!
-        UIView.animate(withDuration: duration, animations: {
+//        UIView.animate(withDuration: duration, animations: {
             for (k,v) in extra.views {
                 var info = mode[k]
                 v.setFromWIB(info: info!)
             }
-        }, completion: { (status) in
-            print(status)
-        })
+//        }, completion: { (status) in
+//            print("ANIMATING COMPLETE")
+//        })
     }
     
     func createEffectsView(_ parent:UIView, _ main:UIView) -> UIView {
@@ -189,48 +190,81 @@ class CLBWebViewEngine {
         return blurEffectView
     }
     
-    func hierV(node:ShadowView, extra: inout UIViewControllerExtra, parent:UIView? = nil)  -> UIView {
-        let module = "openframe"//Bundle.main.infoDictionary!["CFBundleExecutable"] as! String
+    static var viewmap = [UIView:ListProvider]()
+    public func linkDataSource(sourceid:String, selector:String?, view:UIView) {
+        ObjectState.shared.subscribe("/users/$USER/apps/$APP/state", sourceid) {
+            pathvalue in
+            var field = pathvalue as! String
+            var lp = ListProvider(path:field)
+            CLBLayoutEngine.viewmap[view] = lp
+            lp.append(view: view)
+            //refresh
+//            if view.isKind(of: UITableView.self) {
+//                (view as! UITableView).reloadData()
+//            }
+        }
+    }
+
+    func generateView(node:ShadowView) -> UIView? {
+        return nil
+    }
+    
+    func hierV(node:ShadowView, extra: inout UIViewControllerExtra, parent:UIView? = nil)  -> UIView? {
+        let module = "openframe"
         let vname = node.type
         let path = node.id
         print("path: \(path), blur: \(node.blur)")
-        let aClass = NSClassFromString("\(module).\(vname)") as! UIView.Type
-        var mainview = aClass.init()
-        parent?.addSubview(mainview)
-        if node.blur == true {
-            createEffectsView(parent!, mainview)
+        let aClass = NSClassFromString(vname) as! UIView.Type
+        //hack
+        if path.contains("$prototypecell") {
+            let tableView = parent as! UITableView
+            tableView.register(aClass, forCellReuseIdentifier: "$prototypecell")
+            tableView.delegate = currentVC as! UITableViewDelegate
+            tableView.dataSource = currentVC as! UITableViewDataSource
+            //UNCLEAR HOW TO HANDLE CONFIGURATION
+            return nil
+        } else {
+            var mainview = aClass.init()
+            parent?.addSubview(mainview)
+            if node.blur == true {
+                createEffectsView(parent!, mainview)
+            }
+            extra.views[path] = mainview
+            if node.datasource != nil {
+                linkDataSource(sourceid: node.datasource!, selector: node.selector, view: mainview)
+            }
+            for child in node.children {
+                let cview = hierV(node: child, extra: &extra, parent: mainview)
+                if cview != nil {
+                    mainview.addSubview(cview!)
+                }
+            }
+            return mainview
         }
-        extra.views[path] = mainview
-        if node.datasource != nil {
-            
-        }
-        for child in node.children {
-            let cview = hierV(node: child, extra: &extra, parent: mainview)
-            mainview.addSubview(cview)
-        }
-        return mainview
     }
     
     func createViews(vc:UIViewController, extra: inout UIViewControllerExtra) -> UIView {
         let root = extra.info.hierarchy
         let rootview = hierV(node:root, extra: &extra)
-        return rootview
+        return rootview!
     }
     
+    var currentVC:UIViewController?
     func createViewController(info:LayoutInfoSimpleResult?) -> UIViewController? {
         guard info != nil else {
             return nil
         }
         let module = Bundle.main.infoDictionary!["CFBundleExecutable"] as! String
         let vcname = info!.controller
-        let aClass = NSClassFromString("\(module).\(vcname)") as! UIViewController.Type
+        let aClass = NSClassFromString(vcname) as! UIViewController.Type
         let vc = aClass.init()
+        currentVC = vc
         var ex = UIViewControllerExtra(info: info!)
         vcs[vc] = ex
         let rootview = self.createViews(vc: vc, extra: &ex)
         vc.view = UIView(frame: UIScreen.main.bounds)
         vc.view.addSubview(rootview)
-        //animate(ex, label: "initial", mode: nil, duration: 0)
+        animate(ex, label: "initial", mode: nil, duration: 0)
         return vc
     }
     
@@ -302,18 +336,18 @@ extension UIViewController {
     }
     public func animateSubviews(_ label:String, duration:Double) {
         var ex = CLBLayoutEngine.shared.vcs[self]
-        CLBLayoutEngine.shared.animate(ex!, label: "second", mode: nil, duration: duration)
+//        CLBLayoutEngine.shared.animate(ex!, label: label, mode: nil, duration: duration)
     }
 }
 
 extension UIStoryboard {
-    public class func instantiateWIBViewController(withURL: String, options: [String: Any], completion: @escaping (UIViewController) -> Void) {
+    public class func instantiateWIBViewController(withURL: String, options: [String: Any], completion: @escaping (UIViewController) -> Void) -> Void {
         CLBLayoutEngine.shared.loadVC(withURL, options: options, completion: {
             vc in
-            var mwv = MyxedWebView(appname: "WeightList")
-            vc.view.insertSubview(mwv, at: 0)
             completion(vc)
         })
+    
+
     }
     
 }

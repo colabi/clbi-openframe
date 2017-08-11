@@ -151,6 +151,7 @@ public class ObjectState : NSObject {
             CLBIBridge.shared.setupListener(name: "\(index)", mode: "object") {
                 state in
                 var dict = state as! [String:AnyObject]
+                print(dict, self.listeners)
                 self.handleUpdates(dict: dict)
             }
         }
@@ -272,7 +273,7 @@ class ResourceManager : NSObject {
         }
     }
     
-    subscript(post:Post, completion: @escaping (Post) -> Void) -> Int {
+    subscript(post:Post, mask:Int, completion: @escaping (Post) -> Void) -> Int {
         DispatchQueue.main.async {
             completion(post)
         }

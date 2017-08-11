@@ -46,26 +46,36 @@ public class PostView : DataView {
     
 }
 
-public class TestCell : PostView {
-    
+protocol CLBIDataView {
+    func configure(data:Post)
 }
-
 
 
 public class ListProvider : NSObject, UITableViewDelegate {
     var path:String!
     
     var objects:[String:Post]!
+    var ordered:[Post]!
+    var views:[UITableView]!
     public init(path:String) {
         super.init()
         self.path = path
         self.objects = [String:Post]()
+        self.ordered = [Post]()
+        self.views = [UITableView]()
         StreamManager.shared[path] {
             posts in
             for o in posts {
                 var key = o["key"] as! String
                 var p = Post(key: key, ts: nil, summary: nil, resources: nil)
                 self.objects[key] = p
+            }
+            self.ordered = self.objects.keys.map {
+                self.objects[$0]!
+            }
+            for v in self.views {
+                print("view reload")
+                v.reloadData()
             }
         }
     }
@@ -82,17 +92,21 @@ public class ListProvider : NSObject, UITableViewDelegate {
         }
     }
     
+    
+    func append(view:UIView) {
+        self.views.append(view as! UITableView)
+    }
+    
     subscript(index:Int, mask:Int, completion: @escaping (Post) -> Void ) -> Bool {
-        var post = self.objects.first!.value
+        var post = self.ordered[index]
         if mask == 0 {
             completion(post)
+            return false
         }
 
-        if (mask & 1) > 0 {
-            ResourceManager.shared[post] {
-                post in
-                completion(post)
-            }
+        ResourceManager.shared[post, mask] {
+            post in
+            completion(post)
         }
         return true
     }
@@ -105,31 +119,27 @@ open class SynchronizedViewController : UIViewController {
     var selectors:[String:String]!
     var viewmap:[UIView:ListProvider]!
 
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
     override open func viewDidLoad() {
         sources = [String:DataView]()
         selectors = [String:String]()
         viewmap = [UIView:ListProvider]()
     }
-    
-    public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+ 
 
 
-    public func linkDataSource(path:String, selector:String, view:UIView) {
-        sources[path] = view
-        sources[selector] = view
-        ObjectState.shared.subscribe("/users/$USER/apps/$APP/state", path) {
-            pathvalue in
-            var field = pathvalue as! String
-            self.viewmap[view] = ListProvider(path:field)
-            //refresh
-            if view.isKind(of: UITableView.self) {
-                (view as! UITableView).reloadData()
-            }
-        }
-    }
 }
 
 open class CLBIStyleViewController : UIViewController {
@@ -155,73 +165,90 @@ open class CLBIStyleViewController : UIViewController {
     }
 }
 
-open class BrowserStreamVC : SynchronizedViewController, UITableViewDelegate, UIScrollViewDelegate {
+open class BrowserStreamVC : SynchronizedViewController, UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate {
 
     var browserCellClass:AnyClass?
     var userCellClass:AnyClass?
     var currentIdx:String = ""
     var height:CGFloat = 200
 
-    public  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewmap[tableView]?.count ?? 0
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    override init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print(CLBLayoutEngine.viewmap[tableView])
+        let datacount = CLBLayoutEngine.viewmap[tableView]?.count ?? -1
+//        print("TV: \(datacount)")
+        return datacount
     }
     
     public  func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         //configure cell according to boilerplate
-        guard let cell = cell as? PostView,
-        let provider = viewmap[tableView] else {
+        guard let cell = cell as? CLBIDataView,
+        let provider = CLBLayoutEngine.viewmap[tableView] else {
             return
         }
         provider[indexPath.row, 1] {
             post in
             //configure cell with post
-            cell.data = post
+            cell.configure(data: post)
         }
     }
     
     public  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if tableView.isKind(of: browserCellClass!) {
-            var cell:UITableViewCell?
-//            let cell: ParallaxCell = tableView.getReusableCellWithIdentifier(indexPath: indexPath)
-            return cell!
-        }
-
-        return  UITableViewCell(frame:CGRect.zero)
+        //CAN POSIBLY CHANGE BY POST
+        let cell: UITableViewCell = tableView.dequeueReusableCell(withIdentifier: "$prototypecell", for: indexPath)
+        return cell
     }
 
     
 }
 
 
-class MyxedWebView : WKWebView, WKUIDelegate, WKNavigationDelegate {
+open class MyxedWebView : WKWebView, WKUIDelegate, WKNavigationDelegate {
     
     var webview:WKWebView?
     var config:WKWebViewConfiguration!
-    init(appname:String) {
+    var loadCB:((MyxedWebView) -> Void)?
+    init(appname:String, completion: @escaping (MyxedWebView) -> Void) {
         let frame = UIScreen.main.bounds
         super.init(frame: frame, configuration: WKWebViewConfiguration())
         self.configuration.userContentController.add(CLBIBridge.shared, name: "port")
-        var urlstring = "http://172.20.10.2:8100/#/tabs/home/home"
+        var urlstring = "http://192.168.111.8:8100/#/tabs/home/home"
+//        var urlstring = "http://172.20.10.2:8100/#/tabs/home/home"
         load(URLRequest(url: URL(string: urlstring)!))
         self.navigationDelegate = self
         self.uiDelegate = self
+        self.isHidden = true
+        self.loadCB = completion
+
     }
     
     
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("webview: finished load")
-        CLBIBridge.shared.webview = self
-        
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+//        print("webview: finished load")
     }
     
-    required override init?(coder:NSCoder) {
+    public required override init?(coder:NSCoder) {
         super.init(coder:coder)
     }
  
 }
 
+@UIApplicationMain
 open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
     public var window: UIWindow?
+    public var mwv:MyxedWebView?
     open var options:[String:Any] {
         return [
             "views": [
@@ -237,35 +264,30 @@ open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
                 "initial.hidden": "#initial.hidden",
                 "second": "#second"
             ],
-            "css": """
-            """,
-            "html": """
-            <uiview>
-            </uiview>
-            """
-        ] as [String:Any]
+            ] as [String:Any]
     }
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         self.window = UIWindow(frame:UIScreen.main.bounds)
-        self.window?.rootViewController = CLBIGenericLoadViewController()
+        var gvc = CLBIGenericLoadViewController()
+        self.window?.rootViewController = gvc
         self.window?.makeKeyAndVisible()
         CLBLayoutEngine.refreshTimeout = 100
-        UIStoryboard.instantiateWIBViewController(withURL: "https://wibui.herokuapp.com/layout", options: options) {
-            vc in
-            DispatchQueue.main.async {
+        self.mwv = MyxedWebView(appname: "WeightList") {
+            _ in
+            UIStoryboard.instantiateWIBViewController(withURL: "https://wibui.herokuapp.com/layout", options: self.options) {
+                vc in
                 self.window?.rootViewController = vc;
-                vc.animateSubviews("second",duration: 0)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    ObjectState.shared.subscribe("/users/$USER/apps/$APP/state", "browserstreamid") {
-                        value in
-                        print("object state: \(value)")
-                    }
-                    
-                }
+                vc.view.insertSubview(self.mwv!, at: 0)
+                vc.animateSubviews("initial",duration: 0)
+
             }
+//            self.window?.rootViewController?.view.addSubview(self.mwv!)
+            
         }
-        
+//        gvc.view = mwv
+        CLBIBridge.shared.webview = self.mwv
+
 
         
         return true
@@ -273,6 +295,9 @@ open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
 
     }
     
+    class func registerServiceHandlers() -> [String:GenericBridgeFN]{
+        return [String:GenericBridgeFN]()
+    }
     
     public func applicationWillResignActive(_ application: UIApplication) {
     }

@@ -125,8 +125,16 @@ open class DateView : UIView {
 }
 
 public class ParallaxBrowserView : UITableView {
+//    func configure(data: Post) {
+//        print(data)
+//    }
+    
 }
 
-public class ParallaxBrowserViewCell : UITableViewCell {
-    
+public class ParallaxBrowserViewCell : UITableViewCell, CLBIDataView {
+    func configure(data: Post) {
+        backgroundColor = .red
+        print("configuring cell: ", data)
+    }
+
 }

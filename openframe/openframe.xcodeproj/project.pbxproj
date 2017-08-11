@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		240041421F3CB11E00ABBD8C /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 240041411F3CB11E00ABBD8C /* readme.md */; };
 		245447131F3B96AF00ABBD8C /* openframe.h in Headers */ = {isa = PBXBuildFile; fileRef = 245447111F3B96AF00ABBD8C /* openframe.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2474F2701F3E374100ABBD8C /* CLBINative_iOS.swift in Resources */ = {isa = PBXBuildFile; fileRef = 2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */; };
 		24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
 		24CDFBD01F3B9D7000ABBD8C /* CLBWidgets.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */; };
 		24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
@@ -26,6 +27,7 @@
 		2454470E1F3B96AF00ABBD8C /* openframe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = openframe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		245447111F3B96AF00ABBD8C /* openframe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = openframe.h; sourceTree = "<group>"; };
 		245447121F3B96AF00ABBD8C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBINative_iOS.swift; sourceTree = "<group>"; };
 		24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIResource.swift; sourceTree = "<group>"; };
 		24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBWidgets.swift; sourceTree = "<group>"; };
 		24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIViewController.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 				24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */,
 				245447111F3B96AF00ABBD8C /* openframe.h */,
 				245447121F3B96AF00ABBD8C /* Info.plist */,
+				2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */,
 			);
 			path = openframe;
 			sourceTree = "<group>";
@@ -150,6 +153,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				240041421F3CB11E00ABBD8C /* readme.md in Resources */,
+				2474F2701F3E374100ABBD8C /* CLBINative_iOS.swift in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

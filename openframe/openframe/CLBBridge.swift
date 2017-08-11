@@ -9,6 +9,8 @@
 import UIKit
 import WebKit
 
+
+public typealias GenericBridgeFN = (AnyObject, (Any) -> Void) -> Void
 extension Notification.Name {
     static let clbiDataName = Notification.Name("clbi_data")
 }
@@ -18,7 +20,7 @@ struct MessageResponse : Decodable {
 }
 
 
-class CLBIBridge : NSObject, WKScriptMessageHandler {
+public class CLBIBridge : NSObject, WKScriptMessageHandler {
     static var _shared:CLBIBridge!;
     static var shared:CLBIBridge {
         get {
@@ -29,16 +31,19 @@ class CLBIBridge : NSObject, WKScriptMessageHandler {
         }
     }
 
-    var webview:WKWebView?
+    var webview:MyxedWebView?
     var decoder = JSONDecoder()
     var listeners:[String:Array<ListenerCB>]!
-
+    var function_listeners:[String:Array<GenericBridgeFN>]!
+    var apphandlers:[String:Any]!
     override init() {
         super.init()
         //listen for messages
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification), name: .clbiDataName, object: nil)
         listeners = [String:Array<ListenerCB>]()
-
+        function_listeners = [String:Array<GenericBridgeFN>]()
+        apphandlers = CLBIAppDelegate.registerServiceHandlers()
+        
     }
     @objc func handleNotification(note:Notification) {
         print(note)
@@ -54,6 +59,14 @@ class CLBIBridge : NSObject, WKScriptMessageHandler {
         }
         listeners[name]?.append(completion)
     }
+    
+    public func registerListener(funcname:String, function: @escaping GenericBridgeFN) {
+        if function_listeners[funcname] == nil {
+            function_listeners[funcname] = [GenericBridgeFN]()
+        }
+        function_listeners[funcname]?.append(function)
+    }
+    
     func update(index:String, object:AnyObject, completion: @escaping (String) -> Void ) {
         var jsonobject = "{}"
         let cmd = "window.authservice.mbus.handleMessage({'name': 'update', 'index': '\(index)', 'object': \(jsonobject)    })"
@@ -63,13 +76,28 @@ class CLBIBridge : NSObject, WKScriptMessageHandler {
         })
     }
 
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
 //        print(message.body)
         var data = message.body as! [String:AnyObject]
         var name = data["type"] as! String
         if name == "subscribe" {
             var path = data["path"] as! String
             execListeners(path: path, data: data["data"]!)
+        } else if(name == "ready") {
+            webview?.loadCB?(webview!)
+        } else {
+            guard let appFnHandler = apphandlers[name] else {
+                return
+            }
+            let appFn = appFnHandler as! GenericBridgeFN
+            appFn(data["data"]!) {
+                response in
+                print(response)
+                let cmd = "window.authservice.mbus.handleMessage({'name': '\(name)'})"
+                webview?.evaluateJavaScript(cmd, completionHandler: { (a, error) in
+                    print(a)
+                })
+            }
         }
         
 //        var message = try? decoder.decode(MessageResponse.self, from: message.body)
