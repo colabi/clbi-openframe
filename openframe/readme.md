@@ -1,8 +1,12 @@
-stream subscription
-10
-clbibridge first response handler
-conversion to post for stream
+swipeview interface working
 12
-dummy up WIB response for browser
-dummy up wib response for detail
+datatree
 2
+
+transfer out data/shut down google
+
+
+
+tomorrow:
+call edd
+

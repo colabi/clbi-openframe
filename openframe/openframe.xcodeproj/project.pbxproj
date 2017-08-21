@@ -8,18 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		240041421F3CB11E00ABBD8C /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 240041411F3CB11E00ABBD8C /* readme.md */; };
+		240DF9161F3F4FA500ABBD8C /* CLBINative_iOS.swift in Headers */ = {isa = PBXBuildFile; fileRef = 2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 		245447131F3B96AF00ABBD8C /* openframe.h in Headers */ = {isa = PBXBuildFile; fileRef = 245447111F3B96AF00ABBD8C /* openframe.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2461ABB61F3F4FF400ABBD8C /* CLBWidgets_iOS.swift in Resources */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets_iOS.swift */; };
+		2461ABB71F3F4FF400ABBD8C /* CLBLayoutEngine.swift in Resources */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; };
+		2461ABB81F3F4FF400ABBD8C /* CLBIViewController.swift in Resources */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
+		2461ABB91F3F4FF400ABBD8C /* CLBIResource.swift in Resources */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; };
+		2461ABBA1F3F4FF400ABBD8C /* CLBBridge.swift in Resources */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
 		2474F2701F3E374100ABBD8C /* CLBINative_iOS.swift in Resources */ = {isa = PBXBuildFile; fileRef = 2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */; };
-		24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
-		24CDFBD01F3B9D7000ABBD8C /* CLBWidgets.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */; };
-		24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
-		24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; };
-		24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; };
-		24CDFBD41F3B9E1A00ABBD8C /* CLBBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
-		24CDFBD51F3B9E1A00ABBD8C /* CLBIResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; };
-		24CDFBD61F3B9E1A00ABBD8C /* CLBIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
-		24CDFBD71F3B9E1A00ABBD8C /* CLBLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; };
-		24CDFBD81F3B9E1A00ABBD8C /* CLBWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */; };
+		2483474A1F3E9B0E00ABBD8C /* CLBBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; };
+		2483474B1F3E9B0E00ABBD8C /* CLBIResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; };
+		2483474C1F3E9B0E00ABBD8C /* CLBIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; };
+		2483474D1F3E9B0E00ABBD8C /* CLBLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; };
+		2483474E1F3E9B0E00ABBD8C /* CLBWidgets_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets_iOS.swift */; };
+		2483474F1F3E9B0E00ABBD8C /* CLBINative_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */; };
+		24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		24CDFBD01F3B9D7000ABBD8C /* CLBWidgets_iOS.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets_iOS.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,10 +36,13 @@
 		245447121F3B96AF00ABBD8C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBINative_iOS.swift; sourceTree = "<group>"; };
 		24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIResource.swift; sourceTree = "<group>"; };
-		24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBWidgets.swift; sourceTree = "<group>"; };
+		24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBWidgets_iOS.swift; sourceTree = "<group>"; };
 		24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBIViewController.swift; sourceTree = "<group>"; };
 		24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBLayoutEngine.swift; sourceTree = "<group>"; };
 		24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLBBridge.swift; sourceTree = "<group>"; };
+		28F57D8C6A7E16B754DC6195 /* Pods-openframe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openframe.debug.xcconfig"; path = "Pods/Target Support Files/Pods-openframe/Pods-openframe.debug.xcconfig"; sourceTree = "<group>"; };
+		89C9049E4BA9E60F9288FAC0 /* Pods_openframe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_openframe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D649CDDBC143DD872CCAD0A3 /* Pods-openframe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openframe.release.xcconfig"; path = "Pods/Target Support Files/Pods-openframe/Pods-openframe.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +62,8 @@
 				240041411F3CB11E00ABBD8C /* readme.md */,
 				245447101F3B96AF00ABBD8C /* openframe */,
 				2454470F1F3B96AF00ABBD8C /* Products */,
+				D844B95AD351D9B4FED2B6F1 /* Pods */,
+				FAE297F49536663DD8A98EA5 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,16 +78,33 @@
 		245447101F3B96AF00ABBD8C /* openframe */ = {
 			isa = PBXGroup;
 			children = (
-				24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */,
-				24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */,
-				24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */,
-				24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */,
-				24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets.swift */,
 				245447111F3B96AF00ABBD8C /* openframe.h */,
 				245447121F3B96AF00ABBD8C /* Info.plist */,
 				2474F26F1F3E374100ABBD8C /* CLBINative_iOS.swift */,
+				24CDFBCB1F3B9D7000ABBD8C /* CLBWidgets_iOS.swift */,
+				24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */,
+				24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */,
+				24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */,
+				24CDFBCE1F3B9D7000ABBD8C /* CLBBridge.swift */,
 			);
 			path = openframe;
+			sourceTree = "<group>";
+		};
+		D844B95AD351D9B4FED2B6F1 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				28F57D8C6A7E16B754DC6195 /* Pods-openframe.debug.xcconfig */,
+				D649CDDBC143DD872CCAD0A3 /* Pods-openframe.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		FAE297F49536663DD8A98EA5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				89C9049E4BA9E60F9288FAC0 /* Pods_openframe.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -86,11 +115,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */,
+				240DF9161F3F4FA500ABBD8C /* CLBINative_iOS.swift in Headers */,
 				24CDFBCF1F3B9D7000ABBD8C /* CLBBridge.swift in Headers */,
 				24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */,
 				24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */,
 				245447131F3B96AF00ABBD8C /* openframe.h in Headers */,
-				24CDFBD01F3B9D7000ABBD8C /* CLBWidgets.swift in Headers */,
+				24CDFBD01F3B9D7000ABBD8C /* CLBWidgets_iOS.swift in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,10 +131,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 245447161F3B96AF00ABBD8C /* Build configuration list for PBXNativeTarget "openframe" */;
 			buildPhases = (
+				2DF8FC022EE20A38072E9CB8 /* [CP] Check Pods Manifest.lock */,
 				245447091F3B96AF00ABBD8C /* Sources */,
 				2454470A1F3B96AF00ABBD8C /* Frameworks */,
 				2454470B1F3B96AF00ABBD8C /* Headers */,
 				2454470C1F3B96AF00ABBD8C /* Resources */,
+				5D2A64E03C7B5ADFECDB401D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -121,6 +153,9 @@
 		245447051F3B96AF00ABBD8C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				KnownAssetTags = (
+					test,
+				);
 				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "seth piezas";
 				TargetAttributes = {
@@ -154,21 +189,63 @@
 			files = (
 				240041421F3CB11E00ABBD8C /* readme.md in Resources */,
 				2474F2701F3E374100ABBD8C /* CLBINative_iOS.swift in Resources */,
+				2461ABB61F3F4FF400ABBD8C /* CLBWidgets_iOS.swift in Resources */,
+				2461ABB71F3F4FF400ABBD8C /* CLBLayoutEngine.swift in Resources */,
+				2461ABB81F3F4FF400ABBD8C /* CLBIViewController.swift in Resources */,
+				2461ABB91F3F4FF400ABBD8C /* CLBIResource.swift in Resources */,
+				2461ABBA1F3F4FF400ABBD8C /* CLBBridge.swift in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2DF8FC022EE20A38072E9CB8 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-openframe-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5D2A64E03C7B5ADFECDB401D /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-openframe/Pods-openframe-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		245447091F3B96AF00ABBD8C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24CDFBD41F3B9E1A00ABBD8C /* CLBBridge.swift in Sources */,
-				24CDFBD51F3B9E1A00ABBD8C /* CLBIResource.swift in Sources */,
-				24CDFBD61F3B9E1A00ABBD8C /* CLBIViewController.swift in Sources */,
-				24CDFBD71F3B9E1A00ABBD8C /* CLBLayoutEngine.swift in Sources */,
-				24CDFBD81F3B9E1A00ABBD8C /* CLBWidgets.swift in Sources */,
+				2483474A1F3E9B0E00ABBD8C /* CLBBridge.swift in Sources */,
+				2483474B1F3E9B0E00ABBD8C /* CLBIResource.swift in Sources */,
+				2483474C1F3E9B0E00ABBD8C /* CLBIViewController.swift in Sources */,
+				2483474D1F3E9B0E00ABBD8C /* CLBLayoutEngine.swift in Sources */,
+				2483474E1F3E9B0E00ABBD8C /* CLBWidgets_iOS.swift in Sources */,
+				2483474F1F3E9B0E00ABBD8C /* CLBINative_iOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +367,7 @@
 		};
 		245447171F3B96AF00ABBD8C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 28F57D8C6A7E16B754DC6195 /* Pods-openframe.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -312,6 +390,7 @@
 		};
 		245447181F3B96AF00ABBD8C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D649CDDBC143DD872CCAD0A3 /* Pods-openframe.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";

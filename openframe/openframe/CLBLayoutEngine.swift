@@ -105,7 +105,9 @@ class CLBWebViewEngine {
     private var size:CGSize!
     let decoder = JSONDecoder()
     var cache:LayoutInfoSimpleResult?
-    var vcs = [UIViewController:UIViewControllerExtra]()
+    var effect_link_map = [UIView:UIVisualEffectView]()
+    var node_link_map = [UIView:ShadowView]()
+    fileprivate var vcs = [UIViewController:UIViewControllerExtra]()
     func myinit() {
         engine = try? CLBWebViewEngine()
         engine.wv.delegate = self
@@ -125,7 +127,7 @@ class CLBWebViewEngine {
     
     var loadCB:((UIViewController) -> Void)?
     var options:[String:Any]?
-    func loadVC(_ index:String, options: [String: Any], completion: @escaping (UIViewController) -> Void) -> Void {
+    func loadVC(_ index:String, options: [String: Any]?, completion: @escaping (UIViewController) -> Void) -> Void {
         self.options = options
         loadCB = completion
 
@@ -133,7 +135,7 @@ class CLBWebViewEngine {
         if doCacheLoad == true {
 //            var json = UserDefaults.standard.object(forKey: "data") as! String
 //            print(json)
-            if let filepath = Bundle.main.path(forResource: "wib_browser", ofType: "json") {
+            if let filepath = Bundle.main.path(forResource: index, ofType: "json") {
                 var json = try? String(contentsOfFile: filepath)
                 update(json: json!)
             }
@@ -187,27 +189,27 @@ class CLBWebViewEngine {
         blurEffectView.heightAnchor.constraint(equalTo: main.heightAnchor).isActive = true
 
         blurEffectView.isUserInteractionEnabled = true
+        effect_link_map[main] = blurEffectView
         return blurEffectView
     }
     
-    static var viewmap = [UIView:ListProvider]()
+    public static var viewmap = [UIView:ListProvider]()
     public func linkDataSource(sourceid:String, selector:String?, view:UIView) {
         ObjectState.shared.subscribe("/users/$USER/apps/$APP/state", sourceid) {
             pathvalue in
-            var field = pathvalue as! String
-            var lp = ListProvider(path:field)
-            CLBLayoutEngine.viewmap[view] = lp
-            lp.append(view: view)
-            //refresh
-//            if view.isKind(of: UITableView.self) {
-//                (view as! UITableView).reloadData()
-//            }
+            let field = pathvalue as! String
+            guard field.contains("/") else {
+                    return
+            }
+            DataSourceAdapterManager.shared.register(view:view, forPath:field)
         }
     }
 
     func generateView(node:ShadowView) -> UIView? {
         return nil
     }
+    
+    
     
     func hierV(node:ShadowView, extra: inout UIViewControllerExtra, parent:UIView? = nil)  -> UIView? {
         let module = "openframe"
@@ -221,6 +223,8 @@ class CLBWebViewEngine {
             tableView.register(aClass, forCellReuseIdentifier: "$prototypecell")
             tableView.delegate = currentVC as! UITableViewDelegate
             tableView.dataSource = currentVC as! UITableViewDataSource
+            var tvc = currentVC as! UITableViewController
+            tvc.tableView = tableView
             //UNCLEAR HOW TO HANDLE CONFIGURATION
             return nil
         } else {
@@ -230,8 +234,12 @@ class CLBWebViewEngine {
                 createEffectsView(parent!, mainview)
             }
             extra.views[path] = mainview
-            if node.datasource != nil {
-                linkDataSource(sourceid: node.datasource!, selector: node.selector, view: mainview)
+            node_link_map[mainview] = node
+            //MAGIC HERE
+            if let ds = node.datasource  {
+                if !ds.contains("$current") {
+                    linkDataSource(sourceid: node.datasource!, selector: node.selector, view: mainview)
+                }
             }
             for child in node.children {
                 let cview = hierV(node: child, extra: &extra, parent: mainview)
@@ -262,9 +270,10 @@ class CLBWebViewEngine {
         var ex = UIViewControllerExtra(info: info!)
         vcs[vc] = ex
         let rootview = self.createViews(vc: vc, extra: &ex)
-        vc.view = UIView(frame: UIScreen.main.bounds)
-        vc.view.addSubview(rootview)
+//        vc.view = UIView(frame: UIScreen.main.bounds)
+        vc.view = rootview
         animate(ex, label: "initial", mode: nil, duration: 0)
+        vc.viewDidLoad()
         return vc
     }
     
@@ -304,6 +313,10 @@ extension UIView {
         clipsToBounds = info.cornerRadius > 0
         alpha = info.opacity
         backgroundColor = .clear
+        if let ev = CLBLayoutEngine.shared.effect_link_map[self] {
+            ev.layer.cornerRadius = CGFloat(info.cornerRadius)
+            ev.clipsToBounds = clipsToBounds
+        }
 //        backgroundColor = UIColor(red: info.backgroundColor[0]/255.0, green: info.backgroundColor[1]/255.0, blue: info.backgroundColor[2]/255.0, alpha: 1)
         if info.backgroundImage != "" {
             print("BACKGROUND IMAGE: \(info.backgroundImage)")
@@ -316,17 +329,65 @@ extension UIView {
         }
     }
 
-    
-    public var data:Any {
-        set {
-//            setData(data: data)
+    public func descend(subviews:[UIView]) -> [CLBIDataView]{
+        var views = [CLBIDataView]()
+        for sv in subviews {
+            if sv is CLBIDataView {
+                views.append(sv as! CLBIDataView)
+            }
+            var ch = descend(subviews: sv.subviews)
+            views += ch
         }
-        get {
-            return ""
+        return views
+    }
+    
+    public func updatePost(post:Post, data:Datum) {
+        //GLOBAL POST UPDATE
+    }
+    
+    public func setIndexer(_ indexer:Indexer, completion: @escaping (Post) -> Void) {
+        guard let post = indexer.post else {
+            return
+        }
+        var clbiviews = descend(subviews:subviews)
+        for cv in clbiviews {
+            if let sv = CLBLayoutEngine.shared.node_link_map[cv as! UIView] {
+                if let datapath = sv.datasource {
+                    //configure view with post
+                    guard let data = indexer[datapath] else {
+                        return
+                    }
+                    cv.configure(data: data, completion: { (post, dirty) in
+                        self.updatePost(post:post, data:data)
+                        //move loa
+                    })
+                    
+                    
+                    
+                    
+//                    var data = provider?.getByPath(path:datapath)
+//                    guard let d = data else {
+//                        return
+//                    }
+//                    cv.configure(data: d) {
+//                        //listen to post changes by view
+//                        //possibly gang up changes
+//                        post, dirtyarray in
+//                    }
+                }
+            }
         }
     }
-
-
+    
+    public func reloadData() {
+        if self is UITableView {
+            (self as! UITableView).reloadData()
+        }
+        if self is SlideView {
+            var sv = self as! SlideView
+            sv.swipeView.collectionView.reloadData()
+        }
+    }
 }
 
 extension UIViewController {
@@ -338,10 +399,21 @@ extension UIViewController {
         var ex = CLBLayoutEngine.shared.vcs[self]
 //        CLBLayoutEngine.shared.animate(ex!, label: label, mode: nil, duration: duration)
     }
+    public func getView<T>(path:String) -> T {
+        var ex = CLBLayoutEngine.shared.vcs[self]!
+        return ex.views[path] as! T
+    }
 }
 
 extension UIStoryboard {
-    public class func instantiateWIBViewController(withURL: String, options: [String: Any], completion: @escaping (UIViewController) -> Void) -> Void {
+    public class func instantiateWIBViewController(_ withJSON: String, options: [String: Any]?, completion: @escaping (UIViewController) -> Void) -> Void {
+        CLBLayoutEngine.shared.loadVC(withJSON, options: options, completion: {
+            vc in
+            completion(vc)
+        })
+    }
+    
+    public class func instantiateWIBViewController(withURL: String, options: [String: Any]?, completion: @escaping (UIViewController) -> Void) -> Void {
         CLBLayoutEngine.shared.loadVC(withURL, options: options, completion: {
             vc in
             completion(vc)

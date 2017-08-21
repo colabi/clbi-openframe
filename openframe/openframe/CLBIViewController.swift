@@ -1,7 +1,15 @@
 import UIKit
 import WebKit
+import PreviewTransition
+import HFSwipeView
 
-
+open class MyxedConfig {
+    open static var appurl:String {
+//        return "http://192.168.111.8:8100/#/tabs/home/home"
+//        return "http://10.0.0.88:8100/#/tabs/home/home"
+        return "http://172.20.10.2:8100/#/tabs/home/home"
+    }
+}
 
 
 
@@ -25,230 +33,226 @@ public class QueryOptions {
     
 }
 
-public class DataView : UIView {
-    
-}
-
-
-public class PostView : DataView {
-    private var _data:Post?
-    public var pdata:Post {
-        set {
-            configure(data: pdata)
-        }
-        get {
-            return _data!
+extension ParallaxCell {
+    public func configure(data: Post) {
+        print("configuring cell: ", data)
+        if let image = UIImage(named: "a") {
+            //            setImage(image, title: "title", subtitle: "subtitle", caption: "caption")
+            setImage(image, title: "title")
+            self.frame.size = CGSize(width: UIScreen.main.bounds.width  , height: 300)
         }
     }
-    func configure(data:Post) {
+}
+
+public class SwipeDetailVC : UIViewController, UINavigationControllerDelegate, HFSwipeViewDataSource, HFSwipeViewDelegate {
+    var backButton:UIButton!
+    var header:UIView!
+    var currentFullView: UIImageView?
+    var didSetupConstraints: Bool = false
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        navigationItem.setHidesBackButton(true, animated: false)
+        //possibly hook up listener to global current id pull
+    }
+    
+    override public func updateViewConstraints() {
+        if !didSetupConstraints {
+            slideview!.swipeView.autoMatch(.height, to: .height, of: self.slideview!, withMultiplier: 0.95)
+            slideview!.swipeView.autoMatch(.width, to: .width, of: self.slideview!)
+            slideview!.swipeView.autoPinEdge(toSuperviewEdge: .leading)
+            slideview!.swipeView.autoPinEdge(toSuperviewEdge: .trailing)
+            slideview!.swipeView.autoAlignAxis(toSuperviewAxis: .horizontal)
+            didSetupConstraints = true
+        }
+        super.updateViewConstraints()
+    }
+
+
+    fileprivate var fullItemSize: CGSize {
+        return CGSize(width: UIScreen.main.bounds.size.width - 10, height: UIScreen.main.bounds.height)
+    }
+   
+    
+    public required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    override public var prefersStatusBarHidden: Bool {
+        return true;
+    }
+    
+    var slideview:SlideView?
+    override public func viewDidLoad() {
+        setNeedsStatusBarAppearanceUpdate()
+        view.frame = UIScreen.main.bounds
+        slideview = getView(path: "/swipeview")
+        slideview!.swipeView.dataSource = self
+        slideview!.swipeView.delegate = self
+        header = getView(path: "/swipeview/header")
+        let gs_headertap = UITapGestureRecognizer(target: self, action: #selector(handlerHeaderTap(gesture: )))
+        gs_headertap.numberOfTapsRequired = 1
+        header.addGestureRecognizer(gs_headertap)
+//        updateViewConstraints()
+    }
+    
+    @objc func handlerHeaderTap(gesture:UITapGestureRecognizer) {
+        navigationController?.popViewController(animated: true)
+    }
+    
+    public func swipeViewItemDistance(_ swipeView: HFSwipeView) -> CGFloat {
+        return 0
+    }
+    public func swipeViewItemSize(_ swipeView: HFSwipeView) -> CGSize {
+        return fullItemSize
+    }
+    public func swipeViewItemCount(_ swipeView: HFSwipeView) -> Int {
+//        let lp = CLBLayoutEngine.viewmap[slideview!]
+        let lp = DataSourceAdapterManager.shared[swipeView]
+        let datacount = lp?.count ?? 0
+        print("swipeswipe data count: \(datacount)")
+        return datacount
+    }
+    public func swipeView(_ swipeView: HFSwipeView, viewForIndexPath indexPath: IndexPath) -> UIView {
+        var sz = CGSize(width: UIScreen.main.bounds.size.width-15, height: UIScreen.main.bounds.height - 10)
+        let webview = UIImageView(frame:  CGRect(origin: .zero, size: sz))
+        webview.backgroundColor = .red
+        return webview
+    }
+    public func swipeView(_ swipeView: HFSwipeView, needUpdateViewForIndexPath indexPath: IndexPath, view: UIView) {
+        print("needUpdateViewForIndexPath: \(indexPath.row)")
+    }
+    public func swipeView(_ swipeView: HFSwipeView, needUpdateCurrentViewForIndexPath indexPath: IndexPath, view: UIView) {
+        print("updating current view: \(indexPath.row)")
+        currentFullView = view as? UIImageView
+        guard let view = view as? UIImageView
+             else {
+                return
+        }
+        let lp = DataSourceAdapterManager.shared[swipeView]
+        view.backgroundColor = UIColor(hue: 0.5 + CGFloat(indexPath.row) * 0.1, saturation: 1, brightness: 1, alpha: 1)
+        DataSourceAdapterManager.shared[swipeView]?[indexPath.row, false, 1] {//get absolute index post, mask level
+            indexer in
+            view.setIndexer(indexer) {
+                status in
+                print("status update for post")
+            }
+        }
+//        provider[swipeView].setCurrent(indexPath.row, view)
+//        provider.current = indexPath.row
+//        provider[0, true] {
+//            post in
+//            self.view.provider = provider
+//        }
+
         
     }
     
-}
-
-protocol CLBIDataView {
-    func configure(data:Post)
-}
-
-
-public class ListProvider : NSObject, UITableViewDelegate {
-    var path:String!
     
-    var objects:[String:Post]!
-    var ordered:[Post]!
-    var views:[UITableView]!
-    public init(path:String) {
-        super.init()
-        self.path = path
-        self.objects = [String:Post]()
-        self.ordered = [Post]()
-        self.views = [UITableView]()
-        StreamManager.shared[path] {
-            posts in
-            for o in posts {
-                var key = o["key"] as! String
-                var p = Post(key: key, ts: nil, summary: nil, resources: nil)
-                self.objects[key] = p
-            }
-            self.ordered = self.objects.keys.map {
-                self.objects[$0]!
-            }
-            for v in self.views {
-                print("view reload")
-                v.reloadData()
-            }
-        }
+    
+    public func swipeView(_ swipeView: HFSwipeView, didFinishScrollAtIndexPath indexPath: IndexPath) {
+//        log("HFSwipeView(\(swipeView.tag)) -> \(indexPath.row)")
     }
     
-    var count:Int {
-        get {
-            return self.objects.count
-        }
+    public func swipeView(_ swipeView: HFSwipeView, didSelectItemAtPath indexPath: IndexPath) {
+//        log("HFSwipeView(\(swipeView.tag)) -> \(indexPath.row)")
     }
     
-    var totalCount:Int {
-        get {
-            return -1
-        }
-    }
-    
-    
-    func append(view:UIView) {
-        self.views.append(view as! UITableView)
-    }
-    
-    subscript(index:Int, mask:Int, completion: @escaping (Post) -> Void ) -> Bool {
-        var post = self.ordered[index]
-        if mask == 0 {
-            completion(post)
-            return false
-        }
-
-        ResourceManager.shared[post, mask] {
-            post in
-            completion(post)
-        }
-        return true
+    public func swipeView(_ swipeView: HFSwipeView, didChangeIndexPath indexPath: IndexPath, changedView view: UIView) {
+//        log("HFSwipeView(\(swipeView.tag)) -> \(indexPath.row)")
     }
 }
 
-
-
-open class SynchronizedViewController : UIViewController {
-    var sources:[String:UIView]!
-    var selectors:[String:String]!
-    var viewmap:[UIView:ListProvider]!
-
+public class StepBrowserVC : PTTableViewController {
+    
+    var currentIdx:String = ""
+    var height:CGFloat = 200
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nil, bundle: nil)
-        
     }
     
     init() {
         super.init(nibName: nil, bundle: nil)
+        navigationItem.setHidesBackButton(true, animated: false)
     }
     
     public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     
-    override open func viewDidLoad() {
-        sources = [String:DataView]()
-        selectors = [String:String]()
-        viewmap = [UIView:ListProvider]()
+    override public var prefersStatusBarHidden: Bool {
+        return true;
     }
- 
 
-
-}
-
-open class CLBIStyleViewController : UIViewController {
-    open override var prefersStatusBarHidden: Bool {
-        return false;
+    
+    public override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 300
     }
     
-    public init() {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-        setNeedsStatusBarAppearanceUpdate()
-    }
-    
-    open override func viewDidLoad() {
-        setNeedsStatusBarAppearanceUpdate()
-    }
-    
-    public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-open class BrowserStreamVC : SynchronizedViewController, UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate {
-
-    var browserCellClass:AnyClass?
-    var userCellClass:AnyClass?
-    var currentIdx:String = ""
-    var height:CGFloat = 200
-
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-        
-    }
-    
-    override init() {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    public required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print(CLBLayoutEngine.viewmap[tableView])
-        let datacount = CLBLayoutEngine.viewmap[tableView]?.count ?? -1
-//        print("TV: \(datacount)")
+    public override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        let lp = CLBLayoutEngine.viewmap[tableView]
+        let indexer = DataSourceAdapterManager.shared[tableView]
+        let datacount = indexer?.count ?? 0
         return datacount
     }
     
-    public  func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    public override  func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         //configure cell according to boilerplate
-        guard let cell = cell as? CLBIDataView,
-        let provider = CLBLayoutEngine.viewmap[tableView] else {
-            return
+        guard let cell = cell as? ParallaxCell else {
+                return
         }
-        provider[indexPath.row, 1] {
-            post in
-            //configure cell with post
-            cell.configure(data: post)
+        DataSourceAdapterManager.shared[tableView]?[indexPath.row, false, 0] {//get absolute index post, mask level
+            indexer in
+            cell.setImage(UIImage(named: "a")!, title: "TITLE")
+            
+            //            cell.configure(data: indexer.post!) {
+//                post, dirty in
+//                print(post)
+//            }
+//            self.view.setIndexer(indexer) {
+//                status in
+//                print("status update for post")
+//            }
         }
+        
+        
+
     }
     
-    public  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    public override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //CAN POSIBLY CHANGE BY POST
         let cell: UITableViewCell = tableView.dequeueReusableCell(withIdentifier: "$prototypecell", for: indexPath)
         return cell
     }
-
+    
+    public override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //PUSH
+        print("select row")
+        UIStoryboard.instantiateWIBViewController("wib_detail", options: nil) {
+            detailvc in
+            self.navigationController?.pushViewController(detailvc, animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                detailvc.animateSubviews("initial",duration: 0)
+            })
+        }
+    }
     
 }
 
 
-open class MyxedWebView : WKWebView, WKUIDelegate, WKNavigationDelegate {
-    
-    var webview:WKWebView?
-    var config:WKWebViewConfiguration!
-    var loadCB:((MyxedWebView) -> Void)?
-    init(appname:String, completion: @escaping (MyxedWebView) -> Void) {
-        let frame = UIScreen.main.bounds
-        super.init(frame: frame, configuration: WKWebViewConfiguration())
-        self.configuration.userContentController.add(CLBIBridge.shared, name: "port")
-        var urlstring = "http://192.168.111.8:8100/#/tabs/home/home"
-//        var urlstring = "http://172.20.10.2:8100/#/tabs/home/home"
-        load(URLRequest(url: URL(string: urlstring)!))
-        self.navigationDelegate = self
-        self.uiDelegate = self
-        self.isHidden = true
-        self.loadCB = completion
+
+
+
+class CLBINavigationController : UINavigationController {
+    override func pushViewController(_ viewController: UIViewController, animated: Bool) {
+        super.pushViewController(viewController, animated: animated)
 
     }
     
-    
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-//        print("webview: finished load")
-    }
-    
-    public required override init?(coder:NSCoder) {
-        super.init(coder:coder)
-    }
- 
 }
 
-@UIApplicationMain
+
 open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
     public var window: UIWindow?
-    public var mwv:MyxedWebView?
     open var options:[String:Any] {
         return [
             "views": [
@@ -266,37 +270,44 @@ open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
             ],
             ] as [String:Any]
     }
-    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    open func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         self.window = UIWindow(frame:UIScreen.main.bounds)
         var gvc = CLBIGenericLoadViewController()
-        self.window?.rootViewController = gvc
+        let nav1 = CLBINavigationController()
+        nav1.viewControllers = [gvc]
+        self.window?.rootViewController = nav1
         self.window?.makeKeyAndVisible()
         CLBLayoutEngine.refreshTimeout = 100
-        self.mwv = MyxedWebView(appname: "WeightList") {
+
+        CLBIBridge.shared.webview = MyxedWebView(appname: "WeightList") {
             _ in
-            UIStoryboard.instantiateWIBViewController(withURL: "https://wibui.herokuapp.com/layout", options: self.options) {
+            UIStoryboard.instantiateWIBViewController("wib_browser", options: nil) {
                 vc in
-                self.window?.rootViewController = vc;
-                vc.view.insertSubview(self.mwv!, at: 0)
-                vc.animateSubviews("initial",duration: 0)
+//                self.window?.rootViewController = vc;
+                nav1.pushViewController(vc, animated: true)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                    vc.animateSubviews("initial",duration: 0)
+                })
+//                vc.view.insertSubview(self.mwv!, at: 0)
 
             }
 //            self.window?.rootViewController?.view.addSubview(self.mwv!)
             
         }
-//        gvc.view = mwv
-        CLBIBridge.shared.webview = self.mwv
+        nav1.view.insertSubview(CLBIBridge.shared.webview!, at: 0)
 
+        //        gvc.view = mwv
+        CLBIBridge.shared.apphandlers = registerServiceHandlers()
+        configureNavigationBar()
 
-        
         return true
         
 
     }
     
-    class func registerServiceHandlers() -> [String:GenericBridgeFN]{
-        return [String:GenericBridgeFN]()
+    open func registerServiceHandlers() -> [String:openframe.GenericBridgeFN]? {
+        return nil
     }
     
     public func applicationWillResignActive(_ application: UIApplication) {
@@ -312,6 +323,21 @@ open class CLBIAppDelegate : UIResponder, UIApplicationDelegate {
     }
     
     public func applicationWillTerminate(_ application: UIApplication) {
+    }
+    
+    fileprivate func configureNavigationBar() {
+        //transparent background
+        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
+        UINavigationBar.appearance().shadowImage = UIImage()
+        UINavigationBar.appearance().isTranslucent = true
+        
+        
+        if let font = UIFont(name: "Avenir-medium" , size: 18) {
+            UINavigationBar.appearance().titleTextAttributes = [
+                NSAttributedStringKey.foregroundColor : UIColor.white,
+                NSAttributedStringKey.font : font
+            ]
+        }
     }
     
 }

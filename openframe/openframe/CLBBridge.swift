@@ -10,7 +10,7 @@ import UIKit
 import WebKit
 
 
-public typealias GenericBridgeFN = (AnyObject, (Any) -> Void) -> Void
+public typealias GenericBridgeFN = (AnyObject, @escaping (Any) -> Void) -> Void
 extension Notification.Name {
     static let clbiDataName = Notification.Name("clbi_data")
 }
@@ -35,14 +35,13 @@ public class CLBIBridge : NSObject, WKScriptMessageHandler {
     var decoder = JSONDecoder()
     var listeners:[String:Array<ListenerCB>]!
     var function_listeners:[String:Array<GenericBridgeFN>]!
-    var apphandlers:[String:Any]!
+    var apphandlers:[String:Any]?
     override init() {
         super.init()
         //listen for messages
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification), name: .clbiDataName, object: nil)
         listeners = [String:Array<ListenerCB>]()
         function_listeners = [String:Array<GenericBridgeFN>]()
-        apphandlers = CLBIAppDelegate.registerServiceHandlers()
         
     }
     @objc func handleNotification(note:Notification) {
@@ -86,7 +85,7 @@ public class CLBIBridge : NSObject, WKScriptMessageHandler {
         } else if(name == "ready") {
             webview?.loadCB?(webview!)
         } else {
-            guard let appFnHandler = apphandlers[name] else {
+            guard let appFnHandler = apphandlers?[name] else {
                 return
             }
             let appFn = appFnHandler as! GenericBridgeFN
@@ -94,14 +93,17 @@ public class CLBIBridge : NSObject, WKScriptMessageHandler {
                 response in
                 print(response)
                 let cmd = "window.authservice.mbus.handleMessage({'name': '\(name)'})"
-                webview?.evaluateJavaScript(cmd, completionHandler: { (a, error) in
-                    print(a)
-                })
+                DispatchQueue.main.async {
+                    self.webview?.evaluateJavaScript(cmd, completionHandler: { (a, error) in
+                        print(a)
+                    })
+                }
             }
         }
         
 //        var message = try? decoder.decode(MessageResponse.self, from: message.body)
     }
+    
     func execListeners(path:String, data:AnyObject) {
         guard let ll = listeners[path] else {
             return

@@ -8,6 +8,7 @@
 
 import UIKit
 import Photos
+import HFSwipeView
 
 
 class ImageCache {
@@ -70,10 +71,20 @@ class ImageCache {
 typealias ListenerCB = (AnyObject) -> Void
 typealias ResourceDictionary =  [String:ResourceItem]
 typealias ResourceDictionaryCB = (ResourceDictionary) -> Void
+typealias DataDictionary = [String:Datum]
+
+public struct Datum {
+    var id:String
+    var type:String
+    var value:AnyObject
+    var ts:Int?
+    var post:Post?
+}
 
 
 
-struct CLBStreamOption {
+
+public struct CLBStreamOption {
     var isList:Bool
     var summarize:Bool
     var preloadResources:Bool
@@ -89,6 +100,7 @@ public struct Post  {
     var key:String
     var ts:Int?
     var summary:PostSummaryInfo?
+    var datum:DataDictionary?
     var resources:ResourceDictionary?
 }
 
@@ -104,10 +116,12 @@ class StreamManager : NSObject {
         }
     }
     var listeners:[String:Array<ListenerCB>]!
+    var last_cached_data:[String:[AnyObject]]
     var id = 0
     override init() {
-        super.init()
         listeners = [String:Array<ListenerCB>]()
+        last_cached_data = [String:[AnyObject]]()
+        super.init()
     }
     subscript(index:String, completion: @escaping ([AnyObject]) -> Void ) -> Int {
         var nid = id
@@ -115,7 +129,11 @@ class StreamManager : NSObject {
             data in
             //convert data to [Post]
             var posts = data as! [AnyObject]
+            self.last_cached_data[index] = posts
             completion(posts)
+        }
+        if let lcd = last_cached_data[index] {
+            completion(lcd)
         }
         return id
     }
@@ -137,25 +155,31 @@ public class ObjectState : NSObject {
     var id = 0
     var last_state:[String:AnyObject]
     var listeners:[String:Array<(AnyObject) -> Void>]
+    var last_cached_data:[String:AnyObject]
     override init() {
         last_state = [String:AnyObject]()
         listeners = [String:Array<(AnyObject) -> Void>]()
+        last_cached_data = [String:AnyObject]()
         super.init()
     }
     func subscribe(_ index:String, _ field:String, completion: @escaping (AnyObject) -> Void ) -> Int {
         var nid = id
         id += 1
-
+        var fullpath = "\(index)/\(field)"
         if listeners[field] == nil {
             listeners[field] = Array<(AnyObject) -> Void>()
             CLBIBridge.shared.setupListener(name: "\(index)", mode: "object") {
                 state in
                 var dict = state as! [String:AnyObject]
-                print(dict, self.listeners)
+                self.last_cached_data[fullpath] = dict[field]
+//                print(dict, self.listeners)
                 self.handleUpdates(dict: dict)
             }
         }
         listeners[field]?.append(completion)
+        if let lcd = last_cached_data[fullpath] {
+            completion(lcd as AnyObject)
+        }
         return id
     }
     func handleUpdates(dict:[String:AnyObject]) {
@@ -281,20 +305,214 @@ class ResourceManager : NSObject {
     }
 }
 
-extension UIViewController {
-    func connectToDataSources(options:[String:CLBStreamOption]) {
-        for (path,v) in options {
-            //            CLBIBridge.shared.streams["path"] {
-            //                obj in
-            //                print(obj) //delivery summary
-            //                self.updateViewHierarchy(path: path, object: obj)
-            //            }
-        }
+//extension UIViewController {
+//
+//    func updateViewHierarchy(path:String, object:Any) {
+//
+//    }
+//}
 
+
+
+public struct Indexer {
+    var _current:Int = 0
+    var post:Post?
+    var provider:ListProvider?
+    //should keep ordered list here
+    public var current:Int {
+        set {
+            _current = current
+            post = provider?.ordered[current]
+        }
+        get {
+            return _current
+        }
     }
     
-    func updateViewHierarchy(path:String, object:Any) {
+    public var count:Int {
+        get {
+            return (self.provider?.ordered!.count)!
+        }
+    }
+    
+    subscript(index:Int, relative:Bool, mask:Int, completion: @escaping (Indexer) -> Void) -> Indexer {
+        var idx = index
+        if relative {
+            idx = _current + index
+        }
+        let indexer = Indexer(_current: idx, post: self.post, provider: self.provider)
+        completion(indexer)
+        return indexer
+    }
+    
+    subscript(path:String) -> Datum? {
+        var datalabel = (path as NSString).replacingOccurrences(of: "$current.", with:"")
+        //if use current
+        guard let data = post?.datum?[datalabel] else {
+            return nil
+        }
+        return data
+    }
+}
+
+
+public class ListProvider : NSObject, UITableViewDelegate {
+    var path:String!
+    
+    var objects:[String:Post]!
+    var ordered:[Post]!
+    var views:[UIView]!
+    var currentIdx:Int = 0
+    public init(path:String) {
+        super.init()
+        self.path = path
+        self.objects = [String:Post]()
+        self.ordered = [Post]()
+        self.views = [UIView]()
+        StreamManager.shared[path] {
+            posts in
+            for o in posts {
+                var key = o["key"] as! String
+                var p = Post(key: key, ts: nil, summary: nil, datum: nil, resources: nil)
+                self.objects[key] = p
+            }
+            self.ordered = self.objects.keys.map {
+                self.objects[$0]!
+            }
+            for v in self.views {
+                v.reloadData()
+            }
+        }
+    }
+    
+    public var count:Int {
+        get {
+            return self.objects.count
+        }
+    }
+    
+    public var totalCount:Int {
+        get {
+            return -1
+        }
+    }
+    
+    var currentIndexer = Indexer()
+    var view_indexers = [UIView:Indexer]()
+    public var current:Int {
+        set {
+            currentIndexer.current = current
+            let post = self.ordered[current]
+            
+            currentIndexer.post = post
+        }
+        get {return currentIndexer.current}
+    }
+    
+    
+    func register(view:UIView) -> Indexer {
+        self.views.append(view)
+        var newindex = Indexer()
+        newindex.provider = self
+        self.view_indexers[view] = newindex
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            view.reloadData()
+        }
+        return newindex
+    }
+
+    
+    public subscript(index:Int, relative:Bool, completion: @escaping (Post) -> Void ) -> Bool {
+        var idx = currentIndexer.current + index
+        let offsetid = self.ordered[index].key
+        self.doFullSubscript(index: offsetid, mask:1) {
+            post in
+            completion(post)
+        }
+        return true
+    }
+    
+    public subscript(index:Int) -> String {
+        var post = self.ordered[index]
+        return post.key
+    }
+    
+    public func doFullSubscript(index:String, mask:Int, completion: @escaping (Post) -> Void ) -> Bool {
+        var post = self.objects[index]!
+        if mask == 0 {
+            completion(post)
+            return false
+        }
         
+        ResourceManager.shared[post, mask] {
+            post in
+            completion(post)
+        }
+        return true
+    }
+    public subscript(view:UIView) -> Indexer {
+        return view_indexers[view]!
+    }
+
+    /*
+     public var provider:ListProvider? {
+     set {
+     print("descend tree and set data")
+     var clbiviews = descend(subviews:subviews)
+     for cv in clbiviews {
+     if let sv = CLBLayoutEngine.shared.node_link_map[cv as! UIView] {
+     if let datapath = sv.datasource {
+     var data = provider?.getByPath(path:datapath)
+     guard let d = data else {
+     return
+     }
+     cv.configure(data: d) {
+     //listen to post changes by view
+     //possibly gang up changes
+     post, dirtyarray in
+     }
+     }
+     }
+     }
+     }
+     get {
+     return nil
+     }
+     }
+     */
+}
+
+public class DataSourceAdapterManager : NSObject {
+    static var _shared:DataSourceAdapterManager!;
+    static var shared:DataSourceAdapterManager {
+        get {
+            if _shared == nil {
+                _shared = DataSourceAdapterManager()
+            }
+            return _shared
+        }
+    }
+    var adapters = [String:ListProvider]()
+    var indexers = [UIView:Indexer]()
+    var view_indexers = [UIView:ListProvider]()
+    override public init() {
+        
+    }
+    
+    subscript(view:UIView) -> Indexer? {
+        var lp = view_indexers[view]
+        return lp?[view]
+    }
+    
+    func register(view:UIView, forPath path:String) -> Indexer? {
+        var lp = adapters[path]
+        if lp == nil {
+            lp = ListProvider(path:path)
+            adapters[path] = lp
+        }
+        view_indexers[view] = lp
+        var indexer = lp?.register(view: view)
+        return indexer
     }
 }
 

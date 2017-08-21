@@ -1,3 +1,4 @@
+import UIKit
 import CoreMotion
 import Speech
 import Photos
