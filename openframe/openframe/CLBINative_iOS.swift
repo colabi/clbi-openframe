@@ -1,3 +1,13 @@
+/*
+ 
+ Copyright ©Seth Piezas, 2017
+ 
+ GPLv3
+ 
+ */
+
+
+
 import UIKit
 import CoreMotion
 import Speech

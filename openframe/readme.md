@@ -1,12 +1,6 @@
-swipeview interface working
-12
-datatree
-2
+colabi open framework for native view and app data bindings
 
-transfer out data/shut down google
+real description TBD
 
-
-
-tomorrow:
-call edd
-
+code licensed under GPLv3
+https://www.gnu.org/licenses/gpl-3.0.en.html

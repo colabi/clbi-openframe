@@ -1,3 +1,11 @@
+/*
+ 
+ Copyright ©Seth Piezas, 2017
+ 
+ GPLv3
+ 
+ */
+
 import UIKit
 import WebKit
 import PreviewTransition

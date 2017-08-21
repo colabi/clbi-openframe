@@ -1,10 +1,10 @@
-//
-//  CLBWidgets.swift
-//  PreviewTransitionDemo
-//
-//  Created by seth piezas on 8/3/17.
-//  Copyright © 2017 Alex K. All rights reserved.
-//
+/*
+ 
+ Copyright ©Seth Piezas, 2017
+ 
+ GPLv3
+ 
+ */
 
 import UIKit
 import PreviewTransition
