@@ -115,7 +115,7 @@ public class SwipeDetailVC : UIViewController, UINavigationControllerDelegate, H
     }
     public func swipeViewItemCount(_ swipeView: HFSwipeView) -> Int {
 //        let lp = CLBLayoutEngine.viewmap[slideview!]
-        let lp = DataSourceAdapterManager.shared[slideView]
+        let lp = DataSourceAdapterManager.shared[slideview!]
         let datacount = lp?.count ?? 0
         print("swipeswipe data count: \(datacount)")
         return datacount
