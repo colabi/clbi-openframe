@@ -27,6 +27,7 @@
 		24CDFBD11F3B9D7000ABBD8C /* CLBIViewController.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCC1F3B9D7000ABBD8C /* CLBIViewController.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 		24CDFBD21F3B9D7000ABBD8C /* CLBIResource.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCA1F3B9D7000ABBD8C /* CLBIResource.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 		24CDFBD31F3B9D7000ABBD8C /* CLBLayoutEngine.swift in Headers */ = {isa = PBXBuildFile; fileRef = 24CDFBCD1F3B9D7000ABBD8C /* CLBLayoutEngine.swift */; settings = {ATTRIBUTES = (Public, ); }; };
+		356BCC2118C3E4451F091071 /* Pods_openframe.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89C9049E4BA9E60F9288FAC0 /* Pods_openframe.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				356BCC2118C3E4451F091071 /* Pods_openframe.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

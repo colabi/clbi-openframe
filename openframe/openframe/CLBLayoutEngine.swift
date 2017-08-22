@@ -385,7 +385,8 @@ extension UIView {
         }
         if self is SlideView {
             var sv = self as! SlideView
-            sv.swipeView.collectionView.reloadData()
+            sv.swipeView.calculate()
+//            sv.swipeView.collectionView.reloadData()
         }
     }
 }

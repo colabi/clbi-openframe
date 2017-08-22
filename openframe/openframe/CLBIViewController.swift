@@ -13,9 +13,9 @@ import HFSwipeView
 
 open class MyxedConfig {
     open static var appurl:String {
-//        return "http://192.168.111.8:8100/#/tabs/home/home"
+        return "http://192.168.111.8:8100/#/tabs/home/home"
 //        return "http://10.0.0.88:8100/#/tabs/home/home"
-        return "http://172.20.10.2:8100/#/tabs/home/home"
+//        return "http://172.20.10.2:8100/#/tabs/home/home"
     }
 }
 
@@ -115,7 +115,7 @@ public class SwipeDetailVC : UIViewController, UINavigationControllerDelegate, H
     }
     public func swipeViewItemCount(_ swipeView: HFSwipeView) -> Int {
 //        let lp = CLBLayoutEngine.viewmap[slideview!]
-        let lp = DataSourceAdapterManager.shared[swipeView]
+        let lp = DataSourceAdapterManager.shared[slideView]
         let datacount = lp?.count ?? 0
         print("swipeswipe data count: \(datacount)")
         return datacount
